@@ -1,0 +1,6 @@
+name: ParkourRace
+main: net.novauniverse.games.parkourrace.NovaParkourRace
+description: NovaGames Parkour Race
+version: 1.0
+depend: [NovaCore, NovaCoreGameEngine]
+softdepend: [NovaGamesTarget]
