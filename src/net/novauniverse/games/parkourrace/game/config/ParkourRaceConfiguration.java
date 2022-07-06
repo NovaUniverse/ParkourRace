@@ -19,6 +19,7 @@ public class ParkourRaceConfiguration extends MapModule {
 	private VectorArea starterCageArea;
 	private int startCountdown;
 	private int laps;
+	private int gameTime;
 
 	public ParkourRaceConfiguration(JSONObject json) {
 		super(json);
@@ -51,6 +52,7 @@ public class ParkourRaceConfiguration extends MapModule {
 		starterCageArea = VectorArea.fromJSON(json.getJSONObject("starter_cage"));
 		startCountdown = json.getInt("start_countdown");
 		laps = json.getInt("laps");
+		gameTime = json.getInt("game_time");
 	}
 
 	@Override
@@ -77,5 +79,9 @@ public class ParkourRaceConfiguration extends MapModule {
 	
 	public int getLaps() {
 		return laps;
+	}
+	
+	public int getGameTime() {
+		return gameTime;
 	}
 }

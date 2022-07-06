@@ -65,9 +65,10 @@ public class ParkourRace extends MapGame implements Listener {
 	private Task compassTask;
 	private Task particleTask;
 	private Task startCountdownTask;
+	private Task gameCountdownTimer;
 
+	private int timeLeft;
 	private int placementCounter;
-
 	private int startCountdown;
 
 	private ParkourRaceConfiguration config;
@@ -82,8 +83,35 @@ public class ParkourRace extends MapGame implements Listener {
 
 		this.startCountdown = 0;
 		this.placementCounter = 1;
+		this.timeLeft = 0;
 
 		this.playerDataList = new ArrayList<>();
+
+		this.gameCountdownTimer = new SimpleTask(plugin, new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (timeLeft > 0) {
+					if (timeLeft == 30 || timeLeft == 60) {
+						Bukkit.getServer().broadcastMessage(ChatColor.RED + "" + timeLeft + " seconds left " + TextUtils.ICON_WARNING);
+						Bukkit.getServer().getOnlinePlayers().forEach(player -> {
+							VersionIndependentSound.NOTE_PLING.play(player);
+							VersionIndependentUtils.get().sendTitle(player, "", ChatColor.RED + TextUtils.ICON_WARNING + " " + timeLeft + " seconds left " + TextUtils.ICON_WARNING, 0, 40, 10);
+						});
+					}
+
+					if (timeLeft <= 10) {
+						Bukkit.getServer().getOnlinePlayers().forEach(player -> {
+							VersionIndependentSound.NOTE_PLING.play(player);
+							VersionIndependentUtils.get().sendTitle(player, "", ChatColor.RED + TextUtils.ICON_WARNING + " " + timeLeft + " second" + (timeLeft == 1 ? "" : "s") + " left " + TextUtils.ICON_WARNING, 0, 20, 10);
+						});
+					}
+
+					timeLeft--;
+				} else {
+					endGame(GameEndReason.TIME);
+				}
+			}
+		}, 20L);
 
 		this.foodAndLapTask = new SimpleTask(plugin, new Runnable() {
 			@Override
@@ -350,6 +378,7 @@ public class ParkourRace extends MapGame implements Listener {
 		}
 
 		startCountdown = config.getStartCountdown();
+		timeLeft = config.getGameTime();
 
 		Bukkit.getServer().getOnlinePlayers().forEach(p -> setupPlayerData(p));
 
@@ -357,6 +386,7 @@ public class ParkourRace extends MapGame implements Listener {
 		Task.tryStartTask(compassTask);
 		Task.tryStartTask(particleTask);
 		Task.tryStartTask(foodAndLapTask);
+		Task.tryStartTask(gameCountdownTimer);
 
 		Bukkit.getServer().getOnlinePlayers().forEach(p -> teleportPlayer(p));
 
@@ -425,6 +455,7 @@ public class ParkourRace extends MapGame implements Listener {
 		Task.tryStopTask(compassTask);
 		Task.tryStopTask(particleTask);
 		Task.tryStopTask(startCountdownTask);
+		Task.tryStopTask(gameCountdownTimer);
 
 		ended = true;
 	}
@@ -435,6 +466,10 @@ public class ParkourRace extends MapGame implements Listener {
 
 	public ParkourRaceConfiguration getConfig() {
 		return config;
+	}
+
+	public int getTimeLeft() {
+		return timeLeft;
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
