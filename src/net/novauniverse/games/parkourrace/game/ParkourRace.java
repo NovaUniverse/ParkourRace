@@ -196,7 +196,7 @@ public class ParkourRace extends MapGame implements Listener {
 								}
 
 								VersionIndependentSound.WITHER_HURT.play(player);
-								player.sendMessage(ChatColor.RED + "You missed a checkpoint before this one. Right click with the enderpearl to go back to your last checkpoint");
+								player.sendMessage(ChatColor.RED + "You missed a checkpoint. Right click with the enderpearl to go back to your last checkpoint");
 								playerData.setLastSequenceWarning(cSequence);
 							}
 							// Player has not passed the previous checkpoint and will receive a warning
