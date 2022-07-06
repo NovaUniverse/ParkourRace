@@ -156,12 +156,6 @@ public class ParkourRace extends MapGame implements Listener {
 						if (cSequence - 1 == pSequence) {
 							// Player should unlock checkpoint
 							if (checkpoint.isLapFinish()) {
-								playerData.setSequence(cSequence);
-								VersionIndependentSound.ORB_PICKUP.play(player);
-								player.sendMessage(ChatColor.GREEN + "Checkpoint reached");
-								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Checkpoint", 10, 20, 10);
-
-							} else {
 								Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
 								Bukkit.getServer().getPluginManager().callEvent(event);
 
@@ -170,6 +164,11 @@ public class ParkourRace extends MapGame implements Listener {
 								VersionIndependentSound.LEVEL_UP.play(player);
 								player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
 								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
+							} else {
+								playerData.setSequence(cSequence);
+								VersionIndependentSound.ORB_PICKUP.play(player);
+								player.sendMessage(ChatColor.GREEN + "Checkpoint reached");
+								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Checkpoint", 10, 20, 10);
 							}
 
 						}
