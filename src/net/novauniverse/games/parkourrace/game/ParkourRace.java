@@ -7,6 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -19,6 +21,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -47,6 +50,7 @@ import net.zeeraa.novacore.spigot.teams.TeamManager;
 import net.zeeraa.novacore.spigot.utils.ChatColorRGBMapper;
 import net.zeeraa.novacore.spigot.utils.ItemBuilder;
 import net.zeeraa.novacore.spigot.utils.PlayerUtils;
+import net.zeeraa.novacore.spigot.utils.RandomFireworkEffect;
 import net.zeeraa.novacore.spigot.utils.VectorArea;
 
 public class ParkourRace extends MapGame implements Listener {
@@ -163,15 +167,6 @@ public class ParkourRace extends MapGame implements Listener {
 							if (checkpoint.isLapFinish()) {
 								VersionIndependentSound.LEVEL_UP.play(player);
 								if (playerData.getLap() >= config.getLaps()) {
-									Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
-									Bukkit.getServer().getPluginManager().callEvent(event);
-
-									playerData.incrementLap();
-									playerData.setSequence(0);
-									VersionIndependentSound.LEVEL_UP.play(player);
-									player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
-									VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
-								} else {
 									Event event = new ParkourRacePlayerCompleteEvent(player, playerData.getLap());
 									Bukkit.getServer().getPluginManager().callEvent(event);
 
@@ -188,10 +183,31 @@ public class ParkourRace extends MapGame implements Listener {
 										}
 									}
 
-									player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Player Completed> " + color + ChatColor.BOLD + player.getName() + ChatColor.GREEN + ChatColor.BOLD + " completed all " + config.getLaps() + " laps at " + TextUtils.ordinal(placementCounter) + " place");
+									player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Player Completed> " + color + ChatColor.BOLD + player.getName() + ChatColor.GREEN + ChatColor.BOLD + " completed all " + config.getLaps() + " laps in " + TextUtils.ordinal(placementCounter) + " place");
 									VersionIndependentUtils.get().sendTitle(player, org.bukkit.ChatColor.GREEN + "" + ChatColor.BOLD + TextUtils.ordinal(placementCounter) + " place", "", 10, 60, 10);
-									
+
+									Firework fw = (Firework) getConfig().getSpawnLocation().getWorld().spawnEntity(getConfig().getSpawnLocation(), EntityType.FIREWORK);
+									FireworkMeta fwm = fw.getFireworkMeta();
+
+									fwm.setPower(3);
+									fwm.addEffect(RandomFireworkEffect.randomFireworkEffect());
+
+									if (random.nextBoolean()) {
+										fwm.addEffect(RandomFireworkEffect.randomFireworkEffect());
+									}
+
+									fw.setFireworkMeta(fwm);
+
 									placementCounter++;
+								} else {
+									Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
+									Bukkit.getServer().getPluginManager().callEvent(event);
+
+									playerData.incrementLap();
+									playerData.setSequence(0);
+									VersionIndependentSound.LEVEL_UP.play(player);
+									player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
+									VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
 								}
 							} else {
 								playerData.setSequence(cSequence);
@@ -199,10 +215,13 @@ public class ParkourRace extends MapGame implements Listener {
 								player.sendMessage(ChatColor.GREEN + "Checkpoint reached");
 								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Checkpoint", 10, 20, 10);
 							}
-
 						}
 					}
 				});
+
+				if (playerDataList.stream().filter(p -> !p.isCompleted()).count() == 0) {
+					endGame(GameEndReason.ALL_FINISHED);
+				}
 			}
 		}, 0L);
 
