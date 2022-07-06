@@ -14,6 +14,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -49,6 +51,7 @@ public class ParkourRace extends MapGame implements Listener {
 	private boolean started;
 	private boolean ended;
 
+	private Task foodTask;
 	private Task checkTask;
 	private Task compassTask;
 	private Task particleTask;
@@ -69,6 +72,16 @@ public class ParkourRace extends MapGame implements Listener {
 		this.startCountdown = 0;
 
 		this.playerDataList = new ArrayList<>();
+
+		this.foodTask = new SimpleTask(plugin, new Runnable() {
+			@Override
+			public void run() {
+				Bukkit.getServer().getOnlinePlayers().forEach(player -> {
+					player.setFoodLevel(20);
+					player.setSaturation(20.0F);
+				});
+			}
+		}, 20L);
 
 		this.particleTask = new SimpleTask(plugin, new Runnable() {
 			@Override
@@ -185,6 +198,8 @@ public class ParkourRace extends MapGame implements Listener {
 			}
 		}
 
+		PlayerUtils.setMaxHealth(player, 2.0D);
+
 		ItemBuilder compassBuilder = new ItemBuilder(Material.COMPASS);
 		compassBuilder.setAmount(1);
 		compassBuilder.setName(ChatColor.GOLD + "Next checkpoint");
@@ -272,6 +287,7 @@ public class ParkourRace extends MapGame implements Listener {
 		Task.tryStartTask(checkTask);
 		Task.tryStartTask(compassTask);
 		Task.tryStartTask(particleTask);
+		Task.tryStartTask(foodTask);
 
 		Bukkit.getServer().getOnlinePlayers().forEach(p -> teleportPlayer(p));
 
@@ -294,6 +310,7 @@ public class ParkourRace extends MapGame implements Listener {
 			return;
 		}
 
+		Task.tryStopTask(foodTask);
 		Task.tryStopTask(checkTask);
 		Task.tryStopTask(compassTask);
 		Task.tryStopTask(particleTask);
@@ -310,6 +327,13 @@ public class ParkourRace extends MapGame implements Listener {
 		return config;
 	}
 
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	public void onInventoryClick(InventoryClickEvent e) {
+		if (e.getWhoClicked().getGameMode() != GameMode.CREATIVE) {
+			e.setCancelled(true);
+		}
+	}
+
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerDeath(PlayerDeathEvent e) {
 		e.setKeepInventory(true);
@@ -318,6 +342,11 @@ public class ParkourRace extends MapGame implements Listener {
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerRespawn(Player player) {
 		teleportPlayer(player);
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	public void onPlayerDropItem(PlayerDropItemEvent e) {
+		e.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL)
