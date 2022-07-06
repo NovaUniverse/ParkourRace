@@ -28,9 +28,11 @@ import net.md_5.bungee.api.ChatColor;
 import net.novauniverse.games.parkourrace.game.config.Checkpoint;
 import net.novauniverse.games.parkourrace.game.config.ParkourRaceConfiguration;
 import net.novauniverse.games.parkourrace.game.data.PlayerData;
+import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteEvent;
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteLapEvent;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.tasks.Task;
+import net.zeeraa.novacore.commons.utils.TextUtils;
 import net.zeeraa.novacore.spigot.abstraction.VersionIndependentUtils;
 import net.zeeraa.novacore.spigot.abstraction.enums.VersionIndependentSound;
 import net.zeeraa.novacore.spigot.abstraction.events.VersionIndependentPlayerAchievementAwardedEvent;
@@ -60,6 +62,8 @@ public class ParkourRace extends MapGame implements Listener {
 	private Task particleTask;
 	private Task startCountdownTask;
 
+	private int placementCounter;
+
 	private int startCountdown;
 
 	private ParkourRaceConfiguration config;
@@ -73,13 +77,14 @@ public class ParkourRace extends MapGame implements Listener {
 		this.ended = false;
 
 		this.startCountdown = 0;
+		this.placementCounter = 1;
 
 		this.playerDataList = new ArrayList<>();
 
 		this.foodAndLapTask = new SimpleTask(plugin, new Runnable() {
 			@Override
 			public void run() {
-				playerDataList.stream().filter(p -> p.isOnline()).forEach(pd -> {
+				playerDataList.stream().filter(p -> p.isOnline() && !p.isCompleted()).forEach(pd -> {
 					VersionIndependentUtils.get().sendActionBarMessage(pd.getPlayer(), ChatColor.GREEN + "Lap " + pd.getLap());
 				});
 
@@ -156,14 +161,36 @@ public class ParkourRace extends MapGame implements Listener {
 						if (cSequence - 1 == pSequence) {
 							// Player should unlock checkpoint
 							if (checkpoint.isLapFinish()) {
-								Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
-								Bukkit.getServer().getPluginManager().callEvent(event);
-
-								playerData.incrementLap();
-								playerData.setSequence(0);
 								VersionIndependentSound.LEVEL_UP.play(player);
-								player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
-								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
+								if (playerData.getLap() >= config.getLaps()) {
+									Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
+									Bukkit.getServer().getPluginManager().callEvent(event);
+
+									playerData.incrementLap();
+									playerData.setSequence(0);
+									VersionIndependentSound.LEVEL_UP.play(player);
+									player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
+									VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
+								} else {
+									Event event = new ParkourRacePlayerCompleteEvent(player, playerData.getLap());
+									Bukkit.getServer().getPluginManager().callEvent(event);
+
+									playerData.setCompleted(true);
+									player.setGameMode(GameMode.SPECTATOR);
+									PlayerUtils.clearPlayerInventory(player);
+									PlayerUtils.clearPotionEffects(player);
+
+									ChatColor color = ChatColor.AQUA;
+									if (TeamManager.hasTeamManager()) {
+										Team team = TeamManager.getTeamManager().getPlayerTeam(player);
+										if (team != null) {
+											color = team.getTeamColor();
+										}
+									}
+
+									player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Player Completed> " + color + ChatColor.BOLD + player.getName() + ChatColor.GREEN + ChatColor.BOLD + " completed all " + config.getLaps() + " laps at " + TextUtils.ordinal(placementCounter) + " place");
+									VersionIndependentUtils.get().sendTitle(player, org.bukkit.ChatColor.GREEN + "" + ChatColor.BOLD + TextUtils.ordinal(placementCounter) + " place", "", 10, 60, 10);
+								}
 							} else {
 								playerData.setSequence(cSequence);
 								VersionIndependentSound.ORB_PICKUP.play(player);

@@ -18,6 +18,7 @@ public class ParkourRaceConfiguration extends MapModule {
 	private Location spawnLocation;
 	private VectorArea starterCageArea;
 	private int startCountdown;
+	private int laps;
 
 	public ParkourRaceConfiguration(JSONObject json) {
 		super(json);
@@ -38,7 +39,7 @@ public class ParkourRaceConfiguration extends MapModule {
 			if (checkpointJSON.has("ignore_initial_warning")) {
 				ignoreInitialWarning = checkpointJSON.getBoolean("ignore_initial_warning");
 			}
-			
+
 			boolean isFinish = false;
 			if (checkpointJSON.has("is_lap_finish")) {
 				isFinish = checkpointJSON.getBoolean("is_lap_finish");
@@ -49,6 +50,7 @@ public class ParkourRaceConfiguration extends MapModule {
 
 		starterCageArea = VectorArea.fromJSON(json.getJSONObject("starter_cage"));
 		startCountdown = json.getInt("start_countdown");
+		laps = json.getInt("laps");
 	}
 
 	@Override
@@ -71,5 +73,9 @@ public class ParkourRaceConfiguration extends MapModule {
 
 	public int getStartCountdown() {
 		return startCountdown;
+	}
+	
+	public int getLaps() {
+		return laps;
 	}
 }
