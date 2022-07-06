@@ -119,6 +119,11 @@
 			<id>novauniverse-group</id>
 			<url>https://nexus.novauniverse.net/repository/novauniverse-group/</url>
 		</repository>
+
+		<repository>
+			<id>enginehub-maven</id>
+			<url>https://maven.enginehub.org/repo/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -127,6 +132,13 @@
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.8.8-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sk89q.worldedit</groupId>
+			<artifactId>worldedit-bukkit</artifactId>
+			<version>7.2.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 

@@ -34,7 +34,12 @@ public class ParkourRaceConfiguration extends MapModule {
 			Location spawnLocation = LocationUtils.fromJSONObject(checkpointJSON.getJSONObject("spawn_location"), Bukkit.getServer().getWorlds().stream().findFirst().get());
 			int sequence = checkpointJSON.getInt("sequence");
 
-			checkpoints.add(new Checkpoint(sequence, unlockArea, spawnLocation));
+			boolean ignoreInitialWarning = false;
+			if (checkpointJSON.has("ignore_initial_warning")) {
+				ignoreInitialWarning = checkpointJSON.getBoolean("ignore_initial_warning");
+			}
+
+			checkpoints.add(new Checkpoint(sequence, unlockArea, spawnLocation, ignoreInitialWarning));
 		}
 
 		starterCageArea = VectorArea.fromJSON(json.getJSONObject("starter_cage"));

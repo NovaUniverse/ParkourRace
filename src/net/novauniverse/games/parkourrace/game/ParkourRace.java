@@ -30,14 +30,18 @@ import net.zeeraa.novacore.spigot.teams.Team;
 import net.zeeraa.novacore.spigot.teams.TeamManager;
 import net.zeeraa.novacore.spigot.utils.ChatColorRGBMapper;
 import net.zeeraa.novacore.spigot.utils.ItemBuilder;
+import net.zeeraa.novacore.spigot.utils.PlayerUtils;
 import net.zeeraa.novacore.spigot.utils.VectorArea;
 
 public class ParkourRace extends MapGame implements Listener {
+	public static final int COMPASS_SLOT = 8;
+
 	private boolean started;
 	private boolean ended;
 
 	private Task checkTask;
 	private Task compassTask;
+	private Task particleTask;
 	private Task startCountdownTask;
 
 	private int startCountdown;
@@ -56,6 +60,13 @@ public class ParkourRace extends MapGame implements Listener {
 
 		this.playerDataList = new ArrayList<>();
 
+		this.particleTask = new SimpleTask(plugin, new Runnable() {
+			@Override
+			public void run() {
+				config.getCheckpoints().forEach(c -> c.showParticles());
+			}
+		}, 5L);
+
 		this.startCountdownTask = new SimpleTask(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -70,8 +81,8 @@ public class ParkourRace extends MapGame implements Listener {
 
 					VectorArea cage = config.getStarterCageArea();
 					for (int x = cage.getPosition1().getBlockX(); x <= cage.getPosition2().getBlockX(); x++) {
-						for (int y = cage.getPosition1().getBlockX(); y <= cage.getPosition2().getBlockX(); y++) {
-							for (int z = cage.getPosition1().getBlockX(); z <= cage.getPosition2().getBlockX(); z++) {
+						for (int y = cage.getPosition1().getBlockY(); y <= cage.getPosition2().getBlockY(); y++) {
+							for (int z = cage.getPosition1().getBlockZ(); z <= cage.getPosition2().getBlockZ(); z++) {
 								Location location = new Location(getWorld(), x, y, z);
 								location.getBlock().setType(Material.AIR);
 							}
@@ -100,6 +111,10 @@ public class ParkourRace extends MapGame implements Listener {
 
 						if (cSequence - 1 > pSequence) {
 							if (playerData.getLastSequenceWarning() != cSequence) {
+								if (pSequence == 0 && checkpoint.isIgnoreInitialWarning()) {
+									return;
+								}
+
 								VersionIndependentSound.WITHER_HURT.play(player);
 								player.sendMessage(ChatColor.RED + "You missed a checkpoint before this one. Right click with the [INSER SOMETHING HERE] to go back to your last checkpoint");
 								playerData.setLastSequenceWarning(cSequence);
@@ -146,9 +161,15 @@ public class ParkourRace extends MapGame implements Listener {
 			return;
 		}
 
+		PlayerUtils.clearPlayerInventory(player);
+
 		player.teleport(playerData.getRespawnLocation());
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, true, true));
 		player.setGameMode(GameMode.ADVENTURE);
+
+		ItemBuilder compassBuilder = new ItemBuilder(Material.COMPASS);
+		compassBuilder.setName(ChatColor.GOLD + "Next checkpoint");
+		player.getInventory().setItem(COMPASS_SLOT, compassBuilder.build());
 
 		ChatColor color = ChatColor.AQUA;
 		if (TeamManager.hasTeamManager()) {
@@ -195,12 +216,12 @@ public class ParkourRace extends MapGame implements Listener {
 
 	@Override
 	public boolean hasStarted() {
-		return false;
+		return started;
 	}
 
 	@Override
 	public boolean hasEnded() {
-		return false;
+		return ended;
 	}
 
 	@Override
@@ -232,6 +253,7 @@ public class ParkourRace extends MapGame implements Listener {
 
 		Task.tryStartTask(checkTask);
 		Task.tryStartTask(compassTask);
+		Task.tryStartTask(particleTask);
 
 		Bukkit.getServer().getOnlinePlayers().forEach(p -> teleportPlayer(p));
 
@@ -246,10 +268,15 @@ public class ParkourRace extends MapGame implements Listener {
 		}
 
 		Task.tryStopTask(checkTask);
-		Task.tryStartTask(compassTask);
-		Task.tryStartTask(startCountdownTask);
+		Task.tryStopTask(compassTask);
+		Task.tryStopTask(particleTask);
+		Task.tryStopTask(startCountdownTask);
 
 		ended = true;
+	}
+
+	public PlayerData getPlayerData(Player player) {
+		return playerDataList.stream().filter(pd -> pd.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
 	}
 
 	public ParkourRaceConfiguration getConfig() {

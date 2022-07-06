@@ -15,10 +15,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import net.novauniverse.games.parkourrace.game.ParkourRace;
+import net.novauniverse.games.parkourrace.game.command.CopyParkourRaceCheckpointCommand;
 import net.novauniverse.games.parkourrace.game.config.ParkourRaceConfiguration;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.utils.JSONFileUtils;
 import net.zeeraa.novacore.spigot.abstraction.events.VersionIndependentPlayerAchievementAwardedEvent;
+import net.zeeraa.novacore.spigot.command.CommandRegistry;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.GameManager;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.map.mapmodule.MapModuleManager;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.mapselector.selectors.guivoteselector.GUIMapVote;
@@ -94,6 +96,8 @@ public class NovaParkourRace extends JavaPlugin implements Listener {
 
 		Log.info("ParkourRace", "Loading maps from " + mapFolder.getPath());
 		GameManager.getInstance().readMapsFromFolder(mapFolder, worldFolder);
+
+		CommandRegistry.registerCommand(new CopyParkourRaceCheckpointCommand(this));
 	}
 
 	@Override
