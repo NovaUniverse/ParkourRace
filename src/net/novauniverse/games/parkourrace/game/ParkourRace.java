@@ -89,6 +89,7 @@ public class ParkourRace extends MapGame implements Listener {
 		this.timeLeft = 0;
 
 		this.playerDataList = new ArrayList<>();
+		this.timerDecrementCallbacks = new ArrayList<>();
 
 		this.gameCountdownTimer = new SimpleTask(plugin, new BukkitRunnable() {
 			@Override
