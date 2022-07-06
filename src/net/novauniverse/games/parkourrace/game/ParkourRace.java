@@ -28,11 +28,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.md_5.bungee.api.ChatColor;
-import net.novauniverse.games.parkourrace.game.config.Checkpoint;
-import net.novauniverse.games.parkourrace.game.config.ParkourRaceConfiguration;
 import net.novauniverse.games.parkourrace.game.data.PlayerData;
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteEvent;
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteLapEvent;
+import net.novauniverse.games.parkourrace.game.modules.config.Checkpoint;
+import net.novauniverse.games.parkourrace.game.modules.config.ParkourRaceConfiguration;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.tasks.Task;
 import net.zeeraa.novacore.commons.utils.Callback;

@@ -7,7 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import net.novauniverse.games.parkourrace.NovaParkourRace;
-import net.novauniverse.games.parkourrace.game.config.Checkpoint;
+import net.novauniverse.games.parkourrace.game.modules.config.Checkpoint;
 
 public class PlayerData {
 	private UUID uuid;

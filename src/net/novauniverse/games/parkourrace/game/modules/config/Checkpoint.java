@@ -1,4 +1,4 @@
-package net.novauniverse.games.parkourrace.game.config;
+package net.novauniverse.games.parkourrace.game.modules.config;
 
 import java.awt.Color;
 import java.util.ArrayList;

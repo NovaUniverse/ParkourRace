@@ -16,7 +16,8 @@ import org.json.JSONObject;
 
 import net.novauniverse.games.parkourrace.game.ParkourRace;
 import net.novauniverse.games.parkourrace.game.command.CopyParkourRaceCheckpointCommand;
-import net.novauniverse.games.parkourrace.game.config.ParkourRaceConfiguration;
+import net.novauniverse.games.parkourrace.game.modules.config.ParkourRaceConfiguration;
+import net.novauniverse.games.parkourrace.game.modules.pads.SpeedBoostPad;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.utils.JSONFileUtils;
 import net.zeeraa.novacore.spigot.abstraction.events.VersionIndependentPlayerAchievementAwardedEvent;
@@ -81,6 +82,7 @@ public class NovaParkourRace extends JavaPlugin implements Listener {
 		ModuleManager.enable(GameManager.class);
 		ModuleManager.enable(GameLobby.class);
 
+		MapModuleManager.addMapModule("parkourrace.pads.speedboost", SpeedBoostPad.class);
 		MapModuleManager.addMapModule("parkourrace.config", ParkourRaceConfiguration.class);
 
 		this.game = new ParkourRace(this);
