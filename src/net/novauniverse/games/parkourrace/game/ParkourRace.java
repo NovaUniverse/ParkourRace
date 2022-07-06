@@ -33,6 +33,7 @@ import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteEv
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteLapEvent;
 import net.novauniverse.games.parkourrace.game.modules.config.Checkpoint;
 import net.novauniverse.games.parkourrace.game.modules.config.ParkourRaceConfiguration;
+import net.novauniverse.games.parkourrace.util.PlayerTeleportCallback;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.tasks.Task;
 import net.zeeraa.novacore.commons.utils.Callback;
@@ -77,6 +78,7 @@ public class ParkourRace extends MapGame implements Listener {
 	private List<PlayerData> playerDataList;
 
 	private List<Callback> timerDecrementCallbacks;
+	private List<PlayerTeleportCallback> teleportCallbacks;
 
 	public ParkourRace(Plugin plugin) {
 		super(plugin);
@@ -90,6 +92,7 @@ public class ParkourRace extends MapGame implements Listener {
 
 		this.playerDataList = new ArrayList<>();
 		this.timerDecrementCallbacks = new ArrayList<>();
+		this.teleportCallbacks = new ArrayList<>();
 
 		this.gameCountdownTimer = new SimpleTask(plugin, new BukkitRunnable() {
 			@Override
@@ -277,6 +280,10 @@ public class ParkourRace extends MapGame implements Listener {
 		timerDecrementCallbacks.add(callback);
 	}
 
+	public void addTeleportCallback(PlayerTeleportCallback callback) {
+		teleportCallbacks.add(callback);
+	}
+
 	public void setupPlayerData(Player player) {
 		if (playerDataList.stream().filter(pd -> pd.isOwnedBy(player)).count() == 0) {
 			playerDataList.add(new PlayerData(player.getUniqueId()));
@@ -295,6 +302,7 @@ public class ParkourRace extends MapGame implements Listener {
 		player.teleport(playerData.getRespawnLocation());
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, true, true));
 		player.setGameMode(GameMode.ADVENTURE);
+		player.setFireTicks(0);
 
 		ChatColor color = ChatColor.AQUA;
 		if (TeamManager.hasTeamManager()) {
@@ -321,6 +329,8 @@ public class ParkourRace extends MapGame implements Listener {
 		bootsBuilder.setUnbreakable(true);
 		bootsBuilder.setLeatherArmorColor(ChatColorRGBMapper.chatColorToRGBColorData(color).toBukkitColor());
 		player.getInventory().setBoots(bootsBuilder.build());
+
+		teleportCallbacks.forEach(c -> c.execute(player));
 	}
 
 	@Override

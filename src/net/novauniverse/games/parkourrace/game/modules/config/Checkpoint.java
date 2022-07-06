@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import net.novauniverse.games.parkourrace.NovaParkourRace;
-import net.novauniverse.games.parkourrace.game.data.ParkourRaceUtils;
 import net.novauniverse.games.parkourrace.game.data.PlayerData;
 import net.zeeraa.novacore.spigot.utils.LocationUtils;
 import net.zeeraa.novacore.spigot.utils.VectorArea;
@@ -67,7 +66,7 @@ public class Checkpoint {
 	}
 
 	public void showParticles() {
-		List<Vector> vectors = ParkourRaceUtils.getHollowCube(unlockArea.getPosition1(), unlockArea.getPosition2(), 0.5D);
+		List<Vector> vectors = unlockArea.getOutline(0.5D);
 
 		List<Player> spectators = new ArrayList<>();
 		List<Player> completed = new ArrayList<>();
