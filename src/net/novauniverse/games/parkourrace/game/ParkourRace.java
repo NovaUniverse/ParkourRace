@@ -190,6 +190,8 @@ public class ParkourRace extends MapGame implements Listener {
 
 									player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Player Completed> " + color + ChatColor.BOLD + player.getName() + ChatColor.GREEN + ChatColor.BOLD + " completed all " + config.getLaps() + " laps at " + TextUtils.ordinal(placementCounter) + " place");
 									VersionIndependentUtils.get().sendTitle(player, org.bukkit.ChatColor.GREEN + "" + ChatColor.BOLD + TextUtils.ordinal(placementCounter) + " place", "", 10, 60, 10);
+									
+									placementCounter++;
 								}
 							} else {
 								playerData.setSequence(cSequence);
