@@ -171,6 +171,7 @@ public class ParkourRace extends MapGame implements Listener {
 									Bukkit.getServer().getPluginManager().callEvent(event);
 
 									playerData.setCompleted(true);
+									players.remove(playerData.getUuid());
 									player.setGameMode(GameMode.SPECTATOR);
 									PlayerUtils.clearPlayerInventory(player);
 									PlayerUtils.clearPotionEffects(player);
@@ -219,7 +220,7 @@ public class ParkourRace extends MapGame implements Listener {
 					}
 				});
 
-				if (playerDataList.stream().filter(p -> !p.isCompleted()).count() == 0) {
+				if (players.size() == 0) {
 					endGame(GameEndReason.ALL_FINISHED);
 				}
 			}
@@ -377,6 +378,47 @@ public class ParkourRace extends MapGame implements Listener {
 		if (ended) {
 			return;
 		}
+
+		config.getCheckpoints().forEach(c -> {
+			Location location = c.getSpawnLocation();
+			Firework fw = (Firework) location.getWorld().spawnEntity(location, EntityType.FIREWORK);
+			FireworkMeta fwm = fw.getFireworkMeta();
+
+			fwm.setPower(0);
+			fwm.addEffect(RandomFireworkEffect.randomFireworkEffect());
+
+			if (random.nextBoolean()) {
+				fwm.addEffect(RandomFireworkEffect.randomFireworkEffect());
+			}
+
+			fw.setFireworkMeta(fwm);
+			fw.detonate();
+		});
+
+		switch (reason) {
+		case ALL_FINISHED:
+			Bukkit.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "Game Over> All players finished");
+			break;
+
+		case TIME:
+			Bukkit.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "Game Over> Time is up");
+			break;
+
+		case OPERATOR_ENDED_GAME:
+			Bukkit.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "Game Over> An admin has ended the game");
+			break;
+
+		default:
+			break;
+		}
+
+		Bukkit.getServer().getOnlinePlayers().forEach(player -> {
+			VersionIndependentUtils.get().resetEntityMaxHealth(player);
+			player.setFoodLevel(20);
+			PlayerUtils.clearPlayerInventory(player);
+			PlayerUtils.resetPlayerXP(player);
+			player.setGameMode(GameMode.SPECTATOR);
+		});
 
 		Task.tryStopTask(foodAndLapTask);
 		Task.tryStopTask(checkTask);
