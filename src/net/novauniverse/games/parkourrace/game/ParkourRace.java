@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -21,11 +22,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import net.md_5.bungee.api.ChatColor;
 import net.novauniverse.games.parkourrace.game.config.Checkpoint;
 import net.novauniverse.games.parkourrace.game.config.ParkourRaceConfiguration;
 import net.novauniverse.games.parkourrace.game.data.PlayerData;
+import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteLapEvent;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.tasks.Task;
 import net.zeeraa.novacore.spigot.abstraction.VersionIndependentUtils;
@@ -51,7 +54,7 @@ public class ParkourRace extends MapGame implements Listener {
 	private boolean started;
 	private boolean ended;
 
-	private Task foodTask;
+	private Task foodAndLapTask;
 	private Task checkTask;
 	private Task compassTask;
 	private Task particleTask;
@@ -73,15 +76,19 @@ public class ParkourRace extends MapGame implements Listener {
 
 		this.playerDataList = new ArrayList<>();
 
-		this.foodTask = new SimpleTask(plugin, new Runnable() {
+		this.foodAndLapTask = new SimpleTask(plugin, new Runnable() {
 			@Override
 			public void run() {
+				playerDataList.stream().filter(p -> p.isOnline()).forEach(pd -> {
+					VersionIndependentUtils.get().sendActionBarMessage(pd.getPlayer(), ChatColor.GREEN + "Lap " + pd.getLap());
+				});
+
 				Bukkit.getServer().getOnlinePlayers().forEach(player -> {
 					player.setFoodLevel(20);
 					player.setSaturation(20.0F);
 				});
 			}
-		}, 20L);
+		}, 10L);
 
 		this.particleTask = new SimpleTask(plugin, new Runnable() {
 			@Override
@@ -148,9 +155,23 @@ public class ParkourRace extends MapGame implements Listener {
 
 						if (cSequence - 1 == pSequence) {
 							// Player should unlock checkpoint
-							VersionIndependentSound.ORB_PICKUP.play(player);
-							player.sendMessage(ChatColor.GREEN + "Checkpoint reached");
-							playerData.setSequence(cSequence);
+							if (checkpoint.isLapFinish()) {
+								playerData.setSequence(cSequence);
+								VersionIndependentSound.ORB_PICKUP.play(player);
+								player.sendMessage(ChatColor.GREEN + "Checkpoint reached");
+								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Checkpoint", 10, 20, 10);
+
+							} else {
+								Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
+								Bukkit.getServer().getPluginManager().callEvent(event);
+
+								playerData.incrementLap();
+								playerData.setSequence(0);
+								VersionIndependentSound.LEVEL_UP.play(player);
+								player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
+								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
+							}
+
 						}
 					}
 				});
@@ -287,7 +308,7 @@ public class ParkourRace extends MapGame implements Listener {
 		Task.tryStartTask(checkTask);
 		Task.tryStartTask(compassTask);
 		Task.tryStartTask(particleTask);
-		Task.tryStartTask(foodTask);
+		Task.tryStartTask(foodAndLapTask);
 
 		Bukkit.getServer().getOnlinePlayers().forEach(p -> teleportPlayer(p));
 
@@ -310,7 +331,7 @@ public class ParkourRace extends MapGame implements Listener {
 			return;
 		}
 
-		Task.tryStopTask(foodTask);
+		Task.tryStopTask(foodAndLapTask);
 		Task.tryStopTask(checkTask);
 		Task.tryStopTask(compassTask);
 		Task.tryStopTask(particleTask);
@@ -341,7 +362,12 @@ public class ParkourRace extends MapGame implements Listener {
 
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerRespawn(Player player) {
-		teleportPlayer(player);
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				teleportPlayer(player);
+			}
+		}.runTaskLater(getPlugin(), 1L);
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

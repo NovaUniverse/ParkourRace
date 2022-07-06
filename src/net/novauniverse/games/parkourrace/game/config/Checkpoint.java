@@ -25,12 +25,14 @@ public class Checkpoint {
 	private Location spawnLocation;
 
 	private boolean ignoreInitialWarning;
+	private boolean lapFinish;
 
-	public Checkpoint(int sequence, VectorArea unlockArea, Location spawnLocation, boolean ignoreInitialWarning) {
+	public Checkpoint(int sequence, VectorArea unlockArea, Location spawnLocation, boolean ignoreInitialWarning, boolean lapFinish) {
 		this.sequence = sequence;
 		this.unlockArea = unlockArea;
 		this.spawnLocation = spawnLocation;
 		this.ignoreInitialWarning = ignoreInitialWarning;
+		this.lapFinish = lapFinish;
 	}
 
 	public void setWorld(World world) {
@@ -58,6 +60,10 @@ public class Checkpoint {
 
 	public boolean isIgnoreInitialWarning() {
 		return ignoreInitialWarning;
+	}
+
+	public boolean isLapFinish() {
+		return lapFinish;
 	}
 
 	public void showParticles() {
@@ -93,8 +99,8 @@ public class Checkpoint {
 		vectors.forEach(vector -> {
 			Location location = LocationUtils.getLocation(spawnLocation.getWorld(), vector);
 
-			location.add(-0.5, 0, -0.5);
-			
+			location.add(0.5, 0, 0.5);
+
 			ParticleEffect.REDSTONE.display(location, Color.GREEN, spectators);
 
 			ParticleEffect.REDSTONE.display(location, Color.BLUE, completed);

@@ -38,8 +38,13 @@ public class ParkourRaceConfiguration extends MapModule {
 			if (checkpointJSON.has("ignore_initial_warning")) {
 				ignoreInitialWarning = checkpointJSON.getBoolean("ignore_initial_warning");
 			}
+			
+			boolean isFinish = false;
+			if (checkpointJSON.has("is_lap_finish")) {
+				isFinish = checkpointJSON.getBoolean("is_lap_finish");
+			}
 
-			checkpoints.add(new Checkpoint(sequence, unlockArea, spawnLocation, ignoreInitialWarning));
+			checkpoints.add(new Checkpoint(sequence, unlockArea, spawnLocation, ignoreInitialWarning, isFinish));
 		}
 
 		starterCageArea = VectorArea.fromJSON(json.getJSONObject("starter_cage"));

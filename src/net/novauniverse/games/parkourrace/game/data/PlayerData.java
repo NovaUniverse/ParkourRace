@@ -13,12 +13,14 @@ public class PlayerData {
 	private UUID uuid;
 	private int sequence;
 	private int lastSequenceWarning;
+	private int lap;
 	private boolean completed;
-
+	
 	public PlayerData(UUID uuid) {
 		this.uuid = uuid;
 		this.sequence = 0;
 		this.lastSequenceWarning = 0;
+		this.lap = 1;
 		this.completed = false;
 	}
 
@@ -77,5 +79,13 @@ public class PlayerData {
 
 	public void setLastSequenceWarning(int lastSequenceWarning) {
 		this.lastSequenceWarning = lastSequenceWarning;
+	}
+	
+	public int getLap() {
+		return lap;
+	}
+	
+	public void incrementLap() {
+		lap++;
 	}
 }
