@@ -9,7 +9,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,6 +31,8 @@ import net.zeeraa.novacore.spigot.abstraction.enums.VersionIndependentSound;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.GameEndReason;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.MapGame;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.elimination.PlayerQuitEliminationAction;
+import net.zeeraa.novacore.spigot.module.ModuleManager;
+import net.zeeraa.novacore.spigot.module.modules.compass.CompassTracker;
 import net.zeeraa.novacore.spigot.tasks.SimpleTask;
 import net.zeeraa.novacore.spigot.teams.Team;
 import net.zeeraa.novacore.spigot.teams.TeamManager;
@@ -34,6 +42,7 @@ import net.zeeraa.novacore.spigot.utils.PlayerUtils;
 import net.zeeraa.novacore.spigot.utils.VectorArea;
 
 public class ParkourRace extends MapGame implements Listener {
+	public static final int ENDERPEARL_SLOT = 0;
 	public static final int COMPASS_SLOT = 8;
 
 	private boolean started;
@@ -167,10 +176,6 @@ public class ParkourRace extends MapGame implements Listener {
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, true, true));
 		player.setGameMode(GameMode.ADVENTURE);
 
-		ItemBuilder compassBuilder = new ItemBuilder(Material.COMPASS);
-		compassBuilder.setName(ChatColor.GOLD + "Next checkpoint");
-		player.getInventory().setItem(COMPASS_SLOT, compassBuilder.build());
-
 		ChatColor color = ChatColor.AQUA;
 		if (TeamManager.hasTeamManager()) {
 			Team team = TeamManager.getTeamManager().getPlayerTeam(player);
@@ -178,7 +183,19 @@ public class ParkourRace extends MapGame implements Listener {
 				color = team.getTeamColor();
 			}
 		}
+
+		ItemBuilder compassBuilder = new ItemBuilder(Material.COMPASS);
+		compassBuilder.setAmount(1);
+		compassBuilder.setName(ChatColor.GOLD + "Next checkpoint");
+		player.getInventory().setItem(COMPASS_SLOT, compassBuilder.build());
+
+		ItemBuilder returnItemBuilder = new ItemBuilder(Material.ENDER_PEARL);
+		returnItemBuilder.setAmount(1);
+		returnItemBuilder.setLeatherArmorColor(ChatColorRGBMapper.chatColorToRGBColorData(color).toBukkitColor());
+		player.getInventory().setItem(ENDERPEARL_SLOT, returnItemBuilder.build());
+
 		ItemBuilder bootsBuilder = new ItemBuilder(Material.LEATHER_BOOTS);
+		bootsBuilder.setAmount(1);
 		bootsBuilder.setUnbreakable(true);
 		bootsBuilder.setLeatherArmorColor(ChatColorRGBMapper.chatColorToRGBColorData(color).toBukkitColor());
 		player.getInventory().setBoots(bootsBuilder.build());
@@ -258,6 +275,11 @@ public class ParkourRace extends MapGame implements Listener {
 		Bukkit.getServer().getOnlinePlayers().forEach(p -> teleportPlayer(p));
 
 		Task.tryStartTask(startCountdownTask);
+
+		ModuleManager.disable(CompassTracker.class);
+
+		Bukkit.getServer().getWorlds().forEach(w -> VersionIndependentUtils.get().setGameRule(w, "keepInventory", "true"));
+
 		started = true;
 	}
 
@@ -281,5 +303,34 @@ public class ParkourRace extends MapGame implements Listener {
 
 	public ParkourRaceConfiguration getConfig() {
 		return config;
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerDeath(PlayerDeathEvent e) {
+		e.setKeepInventory(true);
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerRespawn(Player player) {
+		teleportPlayer(player);
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onPlayerInteract(PlayerInteractEvent e) {
+		if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+			e.setCancelled(true);
+		}
+
+		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			Player player = e.getPlayer();
+			if (VersionIndependentUtils.getInstance().isInteractEventMainHand(e)) {
+				ItemStack item = VersionIndependentUtils.get().getItemInMainHand(player);
+				if (item != null) {
+					if (item.getType() == Material.ENDER_PEARL) {
+						teleportPlayer(player);
+					}
+				}
+			}
+		}
 	}
 }
