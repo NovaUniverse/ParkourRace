@@ -35,6 +35,7 @@ import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteEv
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteLapEvent;
 import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.tasks.Task;
+import net.zeeraa.novacore.commons.utils.Callback;
 import net.zeeraa.novacore.commons.utils.TextUtils;
 import net.zeeraa.novacore.spigot.abstraction.VersionIndependentUtils;
 import net.zeeraa.novacore.spigot.abstraction.enums.VersionIndependentSound;
@@ -75,6 +76,8 @@ public class ParkourRace extends MapGame implements Listener {
 
 	private List<PlayerData> playerDataList;
 
+	private List<Callback> timerDecrementCallbacks;
+
 	public ParkourRace(Plugin plugin) {
 		super(plugin);
 
@@ -110,6 +113,7 @@ public class ParkourRace extends MapGame implements Listener {
 				} else {
 					endGame(GameEndReason.TIME);
 				}
+				timerDecrementCallbacks.forEach(callback -> callback.execute());
 			}
 		}, 20L);
 
@@ -266,6 +270,10 @@ public class ParkourRace extends MapGame implements Listener {
 				});
 			}
 		}, 5L);
+	}
+
+	public void addTimerDecrementCallback(Callback callback) {
+		timerDecrementCallbacks.add(callback);
 	}
 
 	public void setupPlayerData(Player player) {
