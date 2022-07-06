@@ -2,5 +2,6 @@ name: ParkourRace
 main: net.novauniverse.games.parkourrace.NovaParkourRace
 description: NovaGames Parkour Race
 version: 1.0
+api-version: 1.13
 depend: [NovaCore, NovaCoreGameEngine]
 softdepend: [NovaGamesTarget]
