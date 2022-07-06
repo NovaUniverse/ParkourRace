@@ -28,6 +28,7 @@ import net.zeeraa.novacore.commons.log.Log;
 import net.zeeraa.novacore.commons.tasks.Task;
 import net.zeeraa.novacore.spigot.abstraction.VersionIndependentUtils;
 import net.zeeraa.novacore.spigot.abstraction.enums.VersionIndependentSound;
+import net.zeeraa.novacore.spigot.abstraction.events.VersionIndependentPlayerAchievementAwardedEvent;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.GameEndReason;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.MapGame;
 import net.zeeraa.novacore.spigot.gameengine.module.modules.game.elimination.PlayerQuitEliminationAction;
@@ -125,7 +126,7 @@ public class ParkourRace extends MapGame implements Listener {
 								}
 
 								VersionIndependentSound.WITHER_HURT.play(player);
-								player.sendMessage(ChatColor.RED + "You missed a checkpoint before this one. Right click with the [INSER SOMETHING HERE] to go back to your last checkpoint");
+								player.sendMessage(ChatColor.RED + "You missed a checkpoint before this one. Right click with the enderpearl to go back to your last checkpoint");
 								playerData.setLastSequenceWarning(cSequence);
 							}
 							// Player has not passed the previous checkpoint and will receive a warning
@@ -191,7 +192,7 @@ public class ParkourRace extends MapGame implements Listener {
 
 		ItemBuilder returnItemBuilder = new ItemBuilder(Material.ENDER_PEARL);
 		returnItemBuilder.setAmount(1);
-		returnItemBuilder.setLeatherArmorColor(ChatColorRGBMapper.chatColorToRGBColorData(color).toBukkitColor());
+		returnItemBuilder.setName(ChatColor.RED + "Respawn");
 		player.getInventory().setItem(ENDERPEARL_SLOT, returnItemBuilder.build());
 
 		ItemBuilder bootsBuilder = new ItemBuilder(Material.LEATHER_BOOTS);
@@ -278,9 +279,13 @@ public class ParkourRace extends MapGame implements Listener {
 
 		ModuleManager.disable(CompassTracker.class);
 
-		Bukkit.getServer().getWorlds().forEach(w -> VersionIndependentUtils.get().setGameRule(w, "keepInventory", "true"));
+		Bukkit.getServer().getWorlds().forEach(w -> {
+			VersionIndependentUtils.get().setGameRule(w, "keepInventory", "true");
+			VersionIndependentUtils.get().setGameRule(w, "announceAdvancements", "false");
+		});
 
 		started = true;
+
 	}
 
 	@Override
@@ -332,5 +337,10 @@ public class ParkourRace extends MapGame implements Listener {
 				}
 			}
 		}
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	public void onVersionIndependentPlayerAchievementAwarded(VersionIndependentPlayerAchievementAwardedEvent e) {
+		e.setCancelled(true);
 	}
 }
