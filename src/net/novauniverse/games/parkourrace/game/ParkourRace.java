@@ -174,6 +174,11 @@ public class ParkourRace extends MapGame implements Listener {
 			public void run() {
 				playerDataList.stream().filter(d -> !d.isCompleted()).filter(d -> d.isOnline()).forEach(playerData -> {
 					Player player = playerData.getPlayer();
+
+					if (player.getGameMode() == GameMode.SPECTATOR) {
+						return;
+					}
+
 					Checkpoint checkpoint = config.getCheckpoints().stream().filter(c -> c.isInside(player)).findFirst().orElse(null);
 					if (checkpoint != null) {
 						int cSequence = checkpoint.getSequence();

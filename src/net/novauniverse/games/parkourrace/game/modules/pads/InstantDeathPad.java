@@ -41,7 +41,7 @@ public class InstantDeathPad extends MapModule implements Listener {
 			@Override
 			public void run() {
 				Bukkit.getServer().getOnlinePlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).forEach(player -> {
-					Material blockType = player.getLocation().clone().add(0, -1, 0).getBlock().getType();
+					Material blockType = player.getLocation().clone().add(0, -0.2, 0).getBlock().getType();
 					if (materials.contains(blockType)) {
 						if (!player.isDead()) {
 							player.damage(1000.0D);
