@@ -298,6 +298,14 @@ public class ParkourRace extends MapGame implements Listener {
 		}
 	}
 
+	@Override
+	public void tpToSpectator(Player player) {
+		PlayerUtils.clearPlayerInventory(player);
+		PlayerUtils.clearPotionEffects(player);
+		player.setGameMode(GameMode.SPECTATOR);
+		player.teleport(getActiveMap().getSpectatorLocation());
+	}
+
 	public void teleportPlayer(Player player) {
 		PlayerData playerData = playerDataList.stream().filter(pd -> pd.isOwnedBy(player)).findFirst().orElse(null);
 		if (playerData == null) {
@@ -407,7 +415,7 @@ public class ParkourRace extends MapGame implements Listener {
 		startCountdown = config.getStartCountdown();
 		timeLeft = config.getGameTime();
 
-		Bukkit.getServer().getOnlinePlayers().forEach(p -> setupPlayerData(p));
+		Bukkit.getServer().getOnlinePlayers().stream().filter(p -> players.contains(p.getUniqueId())).forEach(p -> setupPlayerData(p));
 
 		Task.tryStartTask(checkTask);
 		Task.tryStartTask(compassTask);
@@ -415,7 +423,8 @@ public class ParkourRace extends MapGame implements Listener {
 		Task.tryStartTask(foodAndLapTask);
 		Task.tryStartTask(gameCountdownTimer);
 
-		Bukkit.getServer().getOnlinePlayers().forEach(p -> teleportPlayer(p));
+		Bukkit.getServer().getOnlinePlayers().stream().filter(p -> players.contains(p.getUniqueId())).forEach(p -> teleportPlayer(p));
+		Bukkit.getServer().getOnlinePlayers().stream().filter(p -> !players.contains(p.getUniqueId())).forEach(p -> tpToSpectator(p));
 
 		Task.tryStartTask(startCountdownTask);
 
