@@ -240,7 +240,7 @@ public class ParkourRace extends MapGame implements Listener {
 
 									Event event = new ParkourRacePlayerCompleteEvent(player, playerData.getLap());
 									Bukkit.getServer().getPluginManager().callEvent(event);
-									
+
 									placementCounter++;
 								} else {
 									playerData.incrementLap();
@@ -316,6 +316,9 @@ public class ParkourRace extends MapGame implements Listener {
 
 		player.teleport(playerData.getRespawnLocation());
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, true, true));
+		if (config.isNightvision()) {
+			player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, true, true));
+		}
 		player.setGameMode(GameMode.ADVENTURE);
 		player.setFireTicks(0);
 

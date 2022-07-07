@@ -20,11 +20,14 @@ public class ParkourRaceConfiguration extends MapModule {
 	private int startCountdown;
 	private int laps;
 	private int gameTime;
+	private boolean nightvision;
 
 	public ParkourRaceConfiguration(JSONObject json) {
 		super(json);
 
 		checkpoints = new ArrayList<>();
+
+		nightvision = false;
 
 		spawnLocation = LocationUtils.fromJSONObject(json.getJSONObject("spawn_location"), Bukkit.getServer().getWorlds().stream().findFirst().get());
 
@@ -47,6 +50,10 @@ public class ParkourRaceConfiguration extends MapModule {
 			}
 
 			checkpoints.add(new Checkpoint(sequence, unlockArea, spawnLocation, ignoreInitialWarning, isFinish));
+		}
+
+		if (json.has("nightvision")) {
+			nightvision = json.getBoolean("nightvision");
 		}
 
 		starterCageArea = VectorArea.fromJSON(json.getJSONObject("starter_cage"));
@@ -76,12 +83,16 @@ public class ParkourRaceConfiguration extends MapModule {
 	public int getStartCountdown() {
 		return startCountdown;
 	}
-	
+
 	public int getLaps() {
 		return laps;
 	}
-	
+
 	public int getGameTime() {
 		return gameTime;
+	}
+
+	public boolean isNightvision() {
+		return nightvision;
 	}
 }
