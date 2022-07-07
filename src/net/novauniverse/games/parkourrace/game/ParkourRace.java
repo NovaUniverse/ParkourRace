@@ -191,6 +191,7 @@ public class ParkourRace extends MapGame implements Listener {
 						}
 
 						if (cSequence - 1 > pSequence) {
+							// Player has not passed the previous checkpoint and will receive a warning
 							if (playerData.getLastSequenceWarning() != cSequence) {
 								if (pSequence == 0 && checkpoint.isIgnoreInitialWarning()) {
 									return;
@@ -200,7 +201,6 @@ public class ParkourRace extends MapGame implements Listener {
 								player.sendMessage(ChatColor.RED + "You missed a checkpoint. Right click with the enderpearl to go back to your last checkpoint");
 								playerData.setLastSequenceWarning(cSequence);
 							}
-							// Player has not passed the previous checkpoint and will receive a warning
 							return;
 						}
 
