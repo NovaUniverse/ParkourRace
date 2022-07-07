@@ -31,6 +31,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.novauniverse.games.parkourrace.game.data.PlayerData;
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteEvent;
 import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerCompleteLapEvent;
+import net.novauniverse.games.parkourrace.game.event.ParkourRacePlayerReachCheckpointEvent;
 import net.novauniverse.games.parkourrace.game.modules.config.Checkpoint;
 import net.novauniverse.games.parkourrace.game.modules.config.ParkourRaceConfiguration;
 import net.novauniverse.games.parkourrace.util.PlayerTeleportCallback;
@@ -204,7 +205,7 @@ public class ParkourRace extends MapGame implements Listener {
 						}
 
 						if (cSequence - 1 == pSequence) {
-							// Player should unlock checkpoint
+							// Player should unlock checkpoint / lap
 							if (checkpoint.isLapFinish()) {
 								VersionIndependentSound.LEVEL_UP.play(player);
 								if (playerData.getLap() >= config.getLaps()) {
@@ -226,7 +227,7 @@ public class ParkourRace extends MapGame implements Listener {
 									}
 
 									Bukkit.getServer().broadcastMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "Player Completed> " + color + ChatColor.BOLD + player.getName() + ChatColor.GREEN + ChatColor.BOLD + " completed all " + config.getLaps() + " laps in " + TextUtils.ordinal(placementCounter) + " place");
-									VersionIndependentUtils.get().sendTitle(player, org.bukkit.ChatColor.GREEN + "" + ChatColor.BOLD + TextUtils.ordinal(placementCounter) + " place", "", 10, 60, 10);
+									VersionIndependentUtils.get().sendTitle(player, ChatColor.GREEN + "" + ChatColor.BOLD + TextUtils.ordinal(placementCounter) + " place", "", 10, 60, 10);
 
 									Firework fw = (Firework) getConfig().getSpawnLocation().getWorld().spawnEntity(getConfig().getSpawnLocation(), EntityType.FIREWORK);
 									FireworkMeta fwm = fw.getFireworkMeta();
@@ -256,6 +257,8 @@ public class ParkourRace extends MapGame implements Listener {
 								VersionIndependentSound.ORB_PICKUP.play(player);
 								player.sendMessage(ChatColor.GREEN + "Checkpoint reached");
 								VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Checkpoint", 10, 20, 10);
+								Event event = new ParkourRacePlayerReachCheckpointEvent(player);
+								Bukkit.getServer().getPluginManager().callEvent(event);
 							}
 						}
 					}
