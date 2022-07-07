@@ -209,9 +209,6 @@ public class ParkourRace extends MapGame implements Listener {
 							if (checkpoint.isLapFinish()) {
 								VersionIndependentSound.LEVEL_UP.play(player);
 								if (playerData.getLap() >= config.getLaps()) {
-									Event event = new ParkourRacePlayerCompleteEvent(player, playerData.getLap());
-									Bukkit.getServer().getPluginManager().callEvent(event);
-
 									playerData.setCompleted(true);
 									players.remove(playerData.getUuid());
 									player.setGameMode(GameMode.SPECTATOR);
@@ -241,16 +238,18 @@ public class ParkourRace extends MapGame implements Listener {
 
 									fw.setFireworkMeta(fwm);
 
+									Event event = new ParkourRacePlayerCompleteEvent(player, playerData.getLap());
+									Bukkit.getServer().getPluginManager().callEvent(event);
+									
 									placementCounter++;
 								} else {
-									Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
-									Bukkit.getServer().getPluginManager().callEvent(event);
-
 									playerData.incrementLap();
 									playerData.setSequence(0);
 									VersionIndependentSound.LEVEL_UP.play(player);
 									player.sendMessage(ChatColor.GREEN + "Lap " + playerData.getLap());
 									VersionIndependentUtils.get().sendTitle(player, "", ChatColor.GREEN + "Lap " + playerData.getLap(), 10, 20, 10);
+									Event event = new ParkourRacePlayerCompleteLapEvent(player, playerData.getLap());
+									Bukkit.getServer().getPluginManager().callEvent(event);
 								}
 							} else {
 								playerData.setSequence(cSequence);
