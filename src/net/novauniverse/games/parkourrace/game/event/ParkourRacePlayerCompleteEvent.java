@@ -8,19 +8,19 @@ public class ParkourRacePlayerCompleteEvent extends Event {
 	private static final HandlerList HANDLERS_LIST = new HandlerList();
 
 	private Player player;
-	private int lapNumber;
+	private int plecement;
 
-	public ParkourRacePlayerCompleteEvent(Player player, int lapNumber) {
+	public ParkourRacePlayerCompleteEvent(Player player, int plecement) {
 		this.player = player;
-		this.lapNumber = lapNumber;
+		this.plecement = plecement;
 	}
 
 	public Player getPlayer() {
 		return player;
 	}
 
-	public int getLapNumber() {
-		return lapNumber;
+	public int getPlecement() {
+		return plecement;
 	}
 
 	@Override
