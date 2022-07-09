@@ -301,6 +301,9 @@ public class ParkourRace extends MapGame implements Listener {
 	public void tpToSpectator(Player player) {
 		PlayerUtils.clearPlayerInventory(player);
 		PlayerUtils.clearPotionEffects(player);
+		if (config.isNightvision()) {
+			player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, true, true));
+		}
 		player.setGameMode(GameMode.SPECTATOR);
 		player.teleport(getActiveMap().getSpectatorLocation());
 	}
